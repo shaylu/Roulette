@@ -6,6 +6,7 @@
 package rouletteexcercise;
 
 import java.util.ArrayList;
+import rouletteexcercise.RouletteBetWizard.BetOption;
 import rouletteexcercise.RouletteGame.BetType;
 
 /**
@@ -20,12 +21,15 @@ public class RouletteBet {
     private ArrayList<String> _numbers;
     private int _money;
 
-    public RouletteBet(RouletteGame _game, RoulettePlayer _player, BetType _betType, ArrayList<String> _numbers, int _money) {
+    public RouletteBet(RouletteGame _game, RoulettePlayer _player, BetType _betType, ArrayList<String> _numbers, int _money) throws Exception{
         this._game = _game;
         this._player = _player;
         this._betType = _betType;
         this._numbers = _numbers;
         this._money = _money;
+        
+        ValidateBet();
+        
     }
 
     public int CalculateWinning(RouletteNumber number) {
@@ -132,6 +136,14 @@ public class RouletteBet {
         }
         
         return res;
+    }
+
+    private void ValidateBet() throws Exception{
+        if (_betType.NeedsNumbers == false)
+            return;
+       
+        if (!RouletteBetWizard.BetOption.BetFound(this._game.GetSettings().GetRouletteType(), _betType, this._numbers))
+            throw new Exception("No bet option for the bet type and numbers given.");
     }
     
     

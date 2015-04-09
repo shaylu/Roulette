@@ -5,8 +5,10 @@
  */
 package rouletteexcercise;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map.Entry;
 import rouletteexcercise.RouletteGame.BetType;
 
@@ -24,7 +26,7 @@ public class RouletteBetWizard {
         BetOption[] res = new BetOption[options.size()];
         String[] keys = options.keySet().toArray(new String[options.size()]);
         for (int i = 0; i < options.size(); i++) {
-            res[i] = new BetOption(BetType.CORNER, rouletteType, keys[i], options.get(keys[i]));
+            res[i] = new BetOption(BetType.TRIO, rouletteType, keys[i], options.get(keys[i]));
         }
 
         return res;
@@ -53,6 +55,18 @@ public class RouletteBetWizard {
             this.RouletteType = RouletteType;
             this.NameDescription = NameDescription;
             this.NumbersOnBet = NumbersOnBet;
+        }
+        
+        public static boolean BetFound(RouletteGame.RouletteType rouletteType,RouletteGame.BetType betType, ArrayList<String> numbers) throws Exception{
+            BetOption[] options = GetBetOptionsForBetType(rouletteType, betType).BetOptions;
+            HashSet<String> numbersToCheck = new HashSet<>(numbers);
+            for (BetOption option : options) {
+                ArrayList<String> numbersOnBet =  new ArrayList<String>(Arrays.asList(option.NumbersOnBet));
+                if (numbersOnBet.containsAll(numbersToCheck) == true && numbersOnBet.size() == numbersToCheck.size())
+                    return true;
+            }
+            
+            return false;
         }
     }
 

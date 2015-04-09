@@ -117,7 +117,7 @@ public class RouletteGameManager {
         System.out.println("\n//////// SCORE BOARD ////////");
         RoulettePlayer[] players = game.GetPlayers().values().toArray(new RoulettePlayer[game.GetPlayers().size()]);
         SortPlayersByMoney(players);
-        for (int i  = 0; i < players.length; i++) {
+        for (int i = 0; i < players.length; i++) {
             RoulettePlayer player = players[i];
             System.out.println(player.GetName() + ": " + player.GetMoney());
         }
@@ -157,12 +157,17 @@ public class RouletteGameManager {
         int money = ReadAmountOfMoneyFromPlayer(player.GetMoney());
         ArrayList<String> numbers = null;
 
-        if (type.NeedsNumbers) {
-            numbers = ReadNumbersFromConsole(game, type);
-            bet = new RouletteBet(game, player, type, numbers, money);
-        } else {
-            bet = new RouletteBet(game, player, type, null, money);
+        while (true) {
+            if (type.NeedsNumbers == true) {
+                numbers = ReadNumbersFromConsole(game, type);
+            }
 
+            try {
+                bet = new RouletteBet(game, player, type, numbers, money);
+                break;
+            } catch (Exception ex) {
+                System.out.println("Bet invalid! " + ex.getMessage());
+            }
         }
 
         try {
@@ -187,10 +192,11 @@ public class RouletteGameManager {
 
         RouletteGame.BetType[] betTypes = type.BetsTypes;
         for (int i = 0; i < betTypes.length; i++) {
-            System.out.print((i + 1) + ". " + betTypes[i].name() +"\t");
-            
-            if (i % 5 == 0)
+            System.out.print((i + 1) + ". " + betTypes[i].name() + "\t");
+
+            if (i % 5 == 0) {
                 System.out.println("");
+            }
         }
         System.out.print("\n");
 
