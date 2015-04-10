@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Scanner;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -29,7 +31,7 @@ public class RouletteXMLManager {
 
     private Document document;
 
-    public RouletteXMLManager(String filename) throws ParserConfigurationException, SAXException, IOException {
+    private RouletteXMLManager(String filename) throws ParserConfigurationException, SAXException, IOException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setIgnoringElementContentWhitespace(true);
 
@@ -171,5 +173,65 @@ public class RouletteXMLManager {
             
             return new RouletteBet(game, player, type, numbers, money);
         }
+    }
+    
+    public static RouletteGame Load(String path) throws Exception{
+        RouletteGame res = null;
+
+        RouletteXMLManager manager;
+        try {
+            manager = new RouletteXMLManager(path);
+        } catch (Exception e) {
+            throw new Exception("Failed to load xml from file." + e.getMessage());
+        }
+        
+        RouletteSettings settings;
+        try {
+            settings = manager.ReadSettings();
+        } catch (Exception e) {
+            throw new Exception("failed to read settings from xml." + e.getMessage());
+        }
+        
+        res = new RouletteGame(settings);
+        
+        ArrayList<RoulettePlayer> players;
+        try {
+            players = manager.ReadPlayers(res);
+        } catch (Exception e) {
+            throw new Exception("failed to load players from xml." + e.getMessage());
+        }
+        
+        for (RoulettePlayer player : players) {
+            try {
+                res.AddPlayer(player);
+            } catch (Exception e) {
+                throw new Exception("failed to add player." + e.getMessage());
+            }
+        }
+        
+        res.NewRound();
+        
+        HashMap<String, ArrayList<RouletteBet>> bets;
+        
+        try {
+            bets = manager.ReadBets(res, res.GetPlayers());
+        } catch (Exception e) {
+            throw new Exception("failed to load bets from xml." + e.getMessage());
+        }
+        
+        for (RoulettePlayer player : players) {
+            ArrayList<RouletteBet> playerBets = bets.get(player.GetName());
+            if (playerBets != null){
+                for (RouletteBet playerBet : playerBets) {
+                    try {
+                        res.GetRound().PlaceBet(player, playerBet);
+                    } catch (Exception e) {
+                        throw new Exception("faild to place bet for player " + player.GetName() + ", " + e.getMessage());
+                    }
+                }
+            }
+        }
+        
+        return res;
     }
 }

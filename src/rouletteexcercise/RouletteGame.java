@@ -237,6 +237,11 @@ public class RouletteGame {
     public void AddPlayer(RoulettePlayer.RoulettePlayerType playerType, String name) throws RoulettePlayer.PlayerNameAlreadyTakenException {
         AddPlayer(playerType, name, _settings.GetInitialAmoutOfMoneyPerPlayer());
     }
+    
+    public void AddPlayer(RoulettePlayer player) throws RoulettePlayer.PlayerNameAlreadyTakenException {
+        AddPlayer(player.GetPlayerType(), player.GetName(), player.GetMoney());
+    }
+
 
     public void CreateComputerizedPlayers() {
         Random rnd = new Random();

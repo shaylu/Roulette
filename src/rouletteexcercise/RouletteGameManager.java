@@ -7,6 +7,7 @@ package rouletteexcercise;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Scanner;
@@ -17,25 +18,30 @@ import rouletteexcercise.RouletteGame.RouletteType;
  * @author Shay
  */
 public class RouletteGameManager {
-    
     public RouletteGame game;
 
     public void Start() {
-        String action;
+        int action;
         boolean keepRunning = true;
-
         Scanner scanner = new Scanner(System.in);
+        
+        final int NEW_GAME = 1;
+        final int LOAD_FROM_XML = 2;
+        final int EXIT = 3;
 
         while (keepRunning == true) {
-            System.out.print("Create a new game (y/n)? ");
-            action = (scanner.nextLine().equalsIgnoreCase("y")) ? "NEW_GAME" : "EXIT";
+            printMainMenu();
+            System.out.print("Selection: ");
+            action = Integer.parseInt(scanner.nextLine());
             switch (action) {
-                case "NEW_GAME":
-                    NewGame();
+                case NEW_GAME: // new game
+                    NewGame(true, true); // true is to read settings from console and read bets
                     break;
-                case "LOAD_FROM_XML":
-                    LoadGameFromXML();
-                case "EXIT":
+                case LOAD_FROM_XML: // load from xml
+                    if (LoadGameFromXML() == true)
+                        NewGame(false, false); // not to read settings and bets but start the round
+                    break;
+                case EXIT: // exit
                     keepRunning = false;
                     break;
                 default:
@@ -171,50 +177,55 @@ public class RouletteGameManager {
 
     }
 
-    private void NewGame() {
+    private void NewGame(boolean readSettingsFromConsole, boolean readBets) {
         System.out.println("\n======== NEW GAME ========");
 
         boolean keepRunning = true;
 
-        RouletteSettings settings;
+        if (readSettingsFromConsole == true) {
+            RouletteSettings settings;
+            try {
+                settings = ReadSettings();
+            } catch (Exception e) {
+                System.out.println("Failed to read game settings." + e.getMessage());
+                return;
+            }
 
-        try {
-            settings = ReadSettings();
-        } catch (Exception e) {
-            System.out.println("Failed to read game settings." + e.getMessage());
-            return;
+            game = new RouletteGame(settings);
+            ReadPlayers(game);
+            game.CreateComputerizedPlayers();
         }
 
-        game = new RouletteGame(settings);
-        ReadPlayers(game);
-        game.CreateComputerizedPlayers();
-        
         while (game.GetActivePlayersNumbers() > 0 && keepRunning == true) {
 //        while (game.GetActiveHumanPlayersNumber() > 0 && keepRunning == true) {
-            game.NewRound();
             System.out.println("\n******* NEW ROUND *******");
 
-            // place bets
-            for (Entry<String, RoulettePlayer> entry : game.GetPlayers().entrySet()) {
-                RoulettePlayer player = entry.getValue();
-                if (PlaceBets(game, game.GetRound(), player) == false) {
-                    if (game.GetRound().GetNumberOfBetsOfPlayer(player) < game.GetSettings().GetMinimumBetsPerPlayer())
-                    {
-                        System.out.println("You have not reached the minimum bets, you are out.");
-                        player.SetIsPlaying(false);
-                       
-                    }
-                    else
-                    {
-                        System.out.println("Seems like you don't want to bet anymore, would you like to exit (y/n)? ");
-                        Scanner scanner = new Scanner(System.in);
-                        String str = scanner.nextLine();
+            if (readBets == true) {
+                game.NewRound();
 
-                        if (str.equals("y")) {
-                            keepRunning = false;
-                        } 
+                // place bets
+                for (Entry<String, RoulettePlayer> entry : game.GetPlayers().entrySet()) {
+                    RoulettePlayer player = entry.getValue();
+                    if (PlaceBets(game, game.GetRound(), player) == false) {
+                        if (game.GetRound().GetNumberOfBetsOfPlayer(player) < game.GetSettings().GetMinimumBetsPerPlayer()) {
+                            System.out.println("You have not reached the minimum bets, you are out.");
+                            player.SetIsPlaying(false);
+
+                        } else {
+                            System.out.println("Seems like you don't want to bet anymore, would you like to exit (y/n)? ");
+                            Scanner scanner = new Scanner(System.in);
+                            String str = scanner.nextLine();
+
+                            if (str.equals("y")) {
+                                keepRunning = false;
+                            }
+                        }
                     }
                 }
+            }
+            else
+            {
+                readBets = true;
             }
 
             // get number from wheel
@@ -260,8 +271,8 @@ public class RouletteGameManager {
             System.out.println(player.GetName() + ", you don't have any more money left.");
             return true;
         }
-        
-        if (round.GetNumberOfBetsOfPlayer(player) == game.GetSettings().GetMaximumBetsPerPlayer()){
+
+        if (round.GetNumberOfBetsOfPlayer(player) == game.GetSettings().GetMaximumBetsPerPlayer()) {
             System.out.println(player.GetName() + ", you've reached the maximum bets you can make.");
             return true;
         }
@@ -415,8 +426,24 @@ public class RouletteGameManager {
         }
     }
 
-    private void LoadGameFromXML() {
-        System.out.print("XML file location? ");
-        game = new RouletteGame(null)
+    private boolean LoadGameFromXML() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("XML file path? ");
+        String path = scanner.nextLine();
+
+        try {
+            RouletteXMLManager.Load(path);
+            return true;
+        } catch (Exception e) {
+            System.out.println("failed to load game from xml. " + e.getMessage());
+            return false;
+        }
+    }
+
+    private void printMainMenu() {
+        System.out.println("Make a choice: ");
+        System.out.println("1. Play a new game");
+        System.out.println("2. Load a game from XML file");
+        System.out.println("3. Exit");
     }
 }
