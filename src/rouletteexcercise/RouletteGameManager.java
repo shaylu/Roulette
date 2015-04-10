@@ -17,6 +17,8 @@ import rouletteexcercise.RouletteGame.RouletteType;
  * @author Shay
  */
 public class RouletteGameManager {
+    
+    public RouletteGame game;
 
     public void Start() {
         String action;
@@ -31,6 +33,8 @@ public class RouletteGameManager {
                 case "NEW_GAME":
                     NewGame();
                     break;
+                case "LOAD_FROM_XML":
+                    LoadGameFromXML();
                 case "EXIT":
                     keepRunning = false;
                     break;
@@ -181,7 +185,7 @@ public class RouletteGameManager {
             return;
         }
 
-        RouletteGame game = new RouletteGame(settings);
+        game = new RouletteGame(settings);
         ReadPlayers(game);
         game.CreateComputerizedPlayers();
         
@@ -409,5 +413,10 @@ public class RouletteGameManager {
                 }
             }
         }
+    }
+
+    private void LoadGameFromXML() {
+        System.out.print("XML file location? ");
+        game = new RouletteGame(null)
     }
 }
