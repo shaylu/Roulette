@@ -21,7 +21,7 @@ public class RouletteSettings {
     private int _numOfRealPlayers;
     private String _gameName;
 
-    public RouletteSettings(RouletteType _rouletteType, int _minimumBetsPerPlayer, int _maximumBetsPerPlayer, int _initialAmoutOfMoneyPerPlayer, int _numOfComputerizedPlayers, int _numOfRealPlayers, String _gameName) {
+    public RouletteSettings(RouletteType _rouletteType, int _minimumBetsPerPlayer, int _maximumBetsPerPlayer, int _initialAmoutOfMoneyPerPlayer, int _numOfComputerizedPlayers, int _numOfRealPlayers, String _gameName) throws Exception{
         this._rouletteType = _rouletteType;
         this._minimumBetsPerPlayer = _minimumBetsPerPlayer;
         this._maximumBetsPerPlayer = _maximumBetsPerPlayer;
@@ -29,6 +29,8 @@ public class RouletteSettings {
         this._numOfComputerizedPlayers = _numOfComputerizedPlayers;
         this._numOfRealPlayers = _numOfRealPlayers;
         this._gameName = _gameName;
+        
+        Validate();
     }
     
     public RouletteType GetRouletteType()
@@ -74,5 +76,26 @@ public class RouletteSettings {
      */
     public String GetGameName() {
         return _gameName;
+    }
+
+    private void Validate() throws Exception {
+
+        if (_minimumBetsPerPlayer != 0 && _minimumBetsPerPlayer != 1)
+            throw new Exception("Minimum bets per player must be 0 or 1");
+        
+        if (_maximumBetsPerPlayer < 1 || _maximumBetsPerPlayer > 10)
+            throw new Exception("Maximum bets per player must be between 1 to 10");
+        
+        if (_initialAmoutOfMoneyPerPlayer < 10 || _initialAmoutOfMoneyPerPlayer > 100)
+            throw new Exception("Initial of money per player must be between 10 to 100");
+        
+        if (_numOfComputerizedPlayers < 0 || _numOfComputerizedPlayers > 6)
+            throw new Exception("Computerized players must be between 0 to 6.");
+        
+        if (_numOfRealPlayers < 0 || _numOfRealPlayers > 6)
+            throw new Exception("Human players must be between 0 to 6.");
+        
+        if (_numOfRealPlayers + _numOfComputerizedPlayers > 6)
+            throw new Exception("Number of human players and computerized players is bigger than 6.");
     }
 }

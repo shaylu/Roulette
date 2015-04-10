@@ -41,8 +41,114 @@ public class RouletteGameManager {
         }
     }
 
-    private RouletteSettings ReadSettings() {
-        RouletteSettings res = new RouletteSettings(RouletteType.FRENCH, 1, 1, 150, 5, 1, "New Game");
+    private RouletteSettings ReadSettings() throws Exception {
+        Scanner scanner = new Scanner(System.in);
+        RouletteType type;
+        int minimumBetPerPlayer;
+        int maximumBetsPerPlater;
+        int initialMoney;
+        int computerizedPlayer, humanPlayers;
+
+        // roulette type
+        while (true) {
+            System.out.print("Roulette type - French (1), American (2)? ");
+            int typeInt = Integer.parseInt(scanner.nextLine());
+            if (typeInt != 1 && typeInt != 2) {
+                System.out.println("Invalid selection!");
+                continue;
+            }
+
+            if (typeInt == 1) {
+                type = RouletteType.FRENCH;
+            } else {
+                type = RouletteType.AMERICAN;
+            }
+
+            break;
+        }
+
+        while (true) {
+            System.out.print("Minimum bets per player (0 or 1)? ");
+            int num = Integer.parseInt(scanner.nextLine());
+            if (num != 0 && num != 1) {
+                System.out.println("Invalid selection!");
+                continue;
+            }
+
+            minimumBetPerPlayer = num;
+            break;
+        }
+
+        while (true) {
+            System.out.print("Maximum bets per player (1 to 10)? ");
+            int num = Integer.parseInt(scanner.nextLine());
+            if (num < 1 || num > 10) {
+                System.out.println("Invalid selection!");
+                continue;
+            }
+
+            maximumBetsPerPlater = num;
+            break;
+        }
+
+        while (true) {
+            System.out.print("Initial amount of money per player (10 to 100)? ");
+            int num = Integer.parseInt(scanner.nextLine());
+            if (num < 10 || num > 100) {
+                System.out.println("Invalid selection!");
+                continue;
+            }
+
+            initialMoney = num;
+            break;
+        }
+
+        while (true) {
+            while (true) {
+                System.out.print("Number of computerized players (0 to 6)? ");
+                int num = Integer.parseInt(scanner.nextLine());
+                if (num < 0 || num > 6) {
+                    System.out.println("Invalid selection!");
+                    continue;
+                }
+
+                computerizedPlayer = num;
+                break;
+            }
+
+            while (true) {
+                System.out.print("Number of human players (0 to 6)? ");
+                int num = Integer.parseInt(scanner.nextLine());
+                if (num < 0 || num > 6) {
+                    System.out.println("Invalid selection!");
+                    continue;
+                }
+
+                humanPlayers = num;
+                break;
+            }
+
+            if (humanPlayers + computerizedPlayer > 6) {
+                System.out.println("Computerized players and human players are bigger than 6.");
+                continue;
+            } else {
+                break;
+            }
+        }
+
+        System.out.print("Game Name? ");
+        String name = scanner.nextLine();
+
+        RouletteSettings res;
+
+        try {
+            res = new RouletteSettings(type, minimumBetPerPlayer, maximumBetsPerPlater, initialMoney, computerizedPlayer, humanPlayers, name);
+
+        } catch (Exception ex) {
+            System.out.println("Invalid game settings: " + ex.getMessage());
+            return ReadSettings();
+        }
+
         return res;
     }
 
@@ -65,12 +171,22 @@ public class RouletteGameManager {
         System.out.println("\n======== NEW GAME ========");
 
         boolean keepRunning = true;
-        RouletteSettings settings = ReadSettings();
+
+        RouletteSettings settings;
+
+        try {
+            settings = ReadSettings();
+        } catch (Exception e) {
+            System.out.println("Failed to read game settings." + e.getMessage());
+            return;
+        }
+
         RouletteGame game = new RouletteGame(settings);
         ReadPlayers(game);
         game.CreateComputerizedPlayers();
-
-        while (game.GetActiveHumanPlayersNumber() > 0 && keepRunning == true) {
+        
+        while (game.GetActivePlayersNumbers() > 0 && keepRunning == true) {
+//        while (game.GetActiveHumanPlayersNumber() > 0 && keepRunning == true) {
             game.NewRound();
             System.out.println("\n******* NEW ROUND *******");
 
@@ -78,12 +194,21 @@ public class RouletteGameManager {
             for (Entry<String, RoulettePlayer> entry : game.GetPlayers().entrySet()) {
                 RoulettePlayer player = entry.getValue();
                 if (PlaceBets(game, game.GetRound(), player) == false) {
-                    System.out.println("Seems like you don't want to bet anymore, would you like to exit (y/n)? ");
-                    Scanner scanner = new Scanner(System.in);
-                    String str = scanner.nextLine();
+                    if (game.GetRound().GetNumberOfBetsOfPlayer(player) < game.GetSettings().GetMinimumBetsPerPlayer())
+                    {
+                        System.out.println("You have not reached the minimum bets, you are out.");
+                        player.SetIsPlaying(false);
+                       
+                    }
+                    else
+                    {
+                        System.out.println("Seems like you don't want to bet anymore, would you like to exit (y/n)? ");
+                        Scanner scanner = new Scanner(System.in);
+                        String str = scanner.nextLine();
 
-                    if (str.equals("y")) {
-                        keepRunning = false;
+                        if (str.equals("y")) {
+                            keepRunning = false;
+                        } 
                     }
                 }
             }
@@ -129,6 +254,11 @@ public class RouletteGameManager {
 
         if (player.GetMoney() <= 0) {
             System.out.println(player.GetName() + ", you don't have any more money left.");
+            return true;
+        }
+        
+        if (round.GetNumberOfBetsOfPlayer(player) == game.GetSettings().GetMaximumBetsPerPlayer()){
+            System.out.println(player.GetName() + ", you've reached the maximum bets you can make.");
             return true;
         }
 

@@ -102,4 +102,12 @@ public class RouletteRound {
             }
         }
     }
+
+    int GetNumberOfBetsOfPlayer(RoulettePlayer player) {
+        ArrayList<RouletteBet> bets = _bets.get(player.GetName());
+        if (bets != null)
+            return bets.size();
+        else
+            return 0;
+    }
 }

@@ -6,6 +6,7 @@
 package rouletteexcercise;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import rouletteexcercise.RouletteBetWizard.BetOption;
 import rouletteexcercise.RouletteGame.BetType;
 
@@ -106,6 +107,9 @@ public class RouletteBet {
     }
 
     private boolean IsNumberFound(RouletteNumber number) {
+        if (_betType.NeedsNumbers == false)
+            _numbers = new ArrayList<String>(Arrays.asList(_betType.Numbers));
+        
         for (int i = 0; i < _numbers.size(); i++) {
             if (_numbers.get(i).equals(number.GetName())) {
                 return true;
@@ -145,6 +149,4 @@ public class RouletteBet {
         if (!RouletteBetWizard.BetOption.BetFound(this._game.GetSettings().GetRouletteType(), _betType, this._numbers))
             throw new Exception("No bet option for the bet type and numbers given.");
     }
-    
-    
 }

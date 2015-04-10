@@ -23,6 +23,21 @@ public class RouletteGame {
     void EndRound() {
         this._round.EndRound();
     }
+
+    int GetActivePlayersNumbers() {
+        int res = 0;
+
+        for (Entry<String, RoulettePlayer> pair : _players.entrySet()) {
+            RoulettePlayer player = pair.getValue();
+
+            if (player.GetIsPlaying() == true) {
+                res++;
+            }
+
+        }
+
+        return res;
+    }
     
     public enum RouletteType {
         FRENCH(36, BetType.STRAIGHT, BetType.SPLIT, BetType.STREET, BetType.CORNER, BetType.SIX_LINE, BetType.TRIO, BetType.BASKET, BetType.MANQUE, BetType.PASSE, BetType.ROUGE, BetType.NOIR, BetType.PAIR, BetType.IMPAIR, BetType.PREMIERE_DOUZAINE, BetType.MOYENNE_DOUZAINE, BetType.DERNIERE_DOUZAINE, BetType.COLUMN, BetType.SNAKE), 
