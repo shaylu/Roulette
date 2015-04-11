@@ -167,6 +167,7 @@ public class RouletteXMLManager {
             numbers = new ArrayList<>();
             NodeList nodes = betElement.getElementsByTagName("number");
             for (int i = 0; i < nodes.getLength(); i++) {
+                System.out.println(nodes.item(i).getNodeType().toString());
                 String str = nodes.item(i).getNodeValue();
                 numbers.add(str);
             }
